@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'){
 
         // request prepared
         $sql = "INSERT INTO tasks (tasks_name) VALUES (?)" ;
-        $request_prepared = mysqli_stmt_prepare($connection_bdd, $sql) ;
+        $request_prepared = mysqli_prepare($connection_bdd, $sql) ;
         
         // Bind variables to the prepared statement as parameters
         mysqli_stmt_bind_param($request_prepared,'s', $user_task) ;

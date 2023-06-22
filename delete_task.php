@@ -18,7 +18,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
         if($user_delete != 'choisir'){
 
             $sql = "DELETE FROM tasks WHERE tasks_name = ?" ;
-            $request_prepared = mysqli_stmt_prepare($connection_bdd, $sql) ;
+            $request_prepared = mysqli_prepare($connection_bdd, $sql) ;
 
             // Bind variables to the prepared statement as parameters
             mysqli_stmt_bind_param($request_prepared, 's', $user_delete) ;
