@@ -14,7 +14,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'){
         $user_task = htmlspecialchars($_POST['user_task']) ;
 
         // Include the content of the page (connection.php)
-        // Database connection function
         require_once("./connection.php") ;
 
         // request prepared

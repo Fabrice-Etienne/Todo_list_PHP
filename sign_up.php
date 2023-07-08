@@ -3,12 +3,13 @@
 // Include the content of the page (header.php)
 require_once("./header.php") ;
 
+
 if($_SERVER['REQUEST_METHOD'] === "POST"){
     if(isset($_POST['user_last_name']) && !empty($_POST['user_last_name'])){
 
         if(isset($_POST['user_first_name']) && !empty($_POST['user_first_name'])){
 
-            if(($_POST['user_civility']) != 'choisir'){
+            if(($_POST['user_civility']) !== 'choisir'){
                 
                 if(isset($_POST['user_email']) && !empty($_POST['user_email'])){
 
@@ -20,7 +21,7 @@ if($_SERVER['REQUEST_METHOD'] === "POST"){
 
                         $user_last_name  = htmlspecialchars($_POST['user_last_name']) ;
                         $user_first_name = htmlspecialchars($_POST['user_first_name']) ;
-                        $user_civility   = htmlspecialchars($_POST['user_civility']) ;
+                        $user_civility   = intval(htmlspecialchars($_POST['user_civility'])) ; // Convert this value to an integer
                         $user_email      = htmlspecialchars($_POST['user_email']) ;
                         $user_password   = htmlspecialchars($_POST['user_password']) ;
                         // security of password
@@ -29,46 +30,31 @@ if($_SERVER['REQUEST_METHOD'] === "POST"){
                         // Database connection function
                         require_once("./connection.php") ;
 
-                        $id_civility = null ;
-                        if($user_civility === "Homme"){
-                            $sql = "SELECT id_civilty FROM civility WHERE civility_name = 'Homme' LIMIT 1" ;
-                            $request = mysqli_query($connection_bdd, $sql) ;
-
-                            while($row= mysqli_fetch_assoc($request)){
-                                $id_civility = $row['id_civilty'] ;
-                            }
-                        }
-                        elseif($user_civility === "Femme"){
-                            $sql = "SELECT id_civilty FROM civility WHERE civility_name = 'Femme' LIMIT 1" ;
-                            $request = mysqli_query($connection_bdd, $sql) ;
-
-                            while($row= mysqli_fetch_assoc($request)){
-                                $id_civility = $row['id_civilty'] ;
-                            }
-                        }
-
                         // Retrieve the number of table columns (users)
                         // $users_number_columns = SELECT COUNT(*) as num_columns FROM information_schema.columns WHERE table_schema = 'todo_list_php'AND table_name = 'users' ;
 
                         $sql = "INSERT INTO users (users_last_name, users_first_name, id_civility, users_email, users_password) VALUES (?, ?, ?, ?, ?)" ;
                         $request_prepared = mysqli_prepare($connection_bdd, $sql) ;
-                        mysqli_stmt_bind_param($request_prepared, 'ssiss', $user_last_name, $user_first_name, $id_civility, $user_email, $hashed_password) ;
+                        mysqli_stmt_bind_param($request_prepared, 'ssiss', $user_last_name, $user_first_name, $user_civility, $user_email, $hashed_password) ;
                         mysqli_stmt_execute($request_prepared) ;
 
                         mysqli_stmt_store_result($request_prepared) ;
-                        if(mysqli_stmt_num_rows($request_prepared) === 0){
-                            die("<p>Les informations que vous venez de saisir n'ont pas été ajouté en base de données.<br> <a href=\"./sign_up.php\">Retour</a></p>\n") ;
+                        
+                        if (mysqli_stmt_errno($request_prepared) !== 0) {
+                            die("Erreur MySQL : " . mysqli_stmt_error($request_prepared));
                         }
-                        else {
-                            echo("<p>Compte crée avec succès.</p>") ;
-
-                            $civility = ($user_civility === "Homme")? "M": "Mme" ;
-
-                            echo("<p>Souhaitez-vous etre rediriger vers votre compte ? <a href=\"log_in.php\">Non</a><a href=\"my_account.php\">Oui</a></p>") ;
-                        }
+                        
+                        $civility = ($user_civility === 1)? "M": "Mme" ;
 
                         mysqli_close($connection_bdd) ;
                         mysqli_stmt_close($request_prepared) ;
+
+                        // Login to save user data
+                        session_start();
+                        $_SESSION['user_email'] = $user_email ;
+
+                        header("location: my_account.php") ;
+                        exit() ;
                     }
                 }
             }
